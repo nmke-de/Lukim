@@ -7,6 +7,8 @@ import { Marked } from "https://raw.githubusercontent.com/ubersl0th/markdown/mas
 const g = new Geddit();
 const port = 11100;
 
+const unescapehtml = (escaped) => escaped.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+
 const post = (data) => `\t\t<article style='background-color: #f0f0f0;'>
 			<h1>${data.title}</h1>
 			<author>${data.author}</author>
@@ -14,7 +16,7 @@ const post = (data) => `\t\t<article style='background-color: #f0f0f0;'>
 			<a href="${data.permalink}">Permalink</a>
 			${data.post_hint === "image" ? '<img style="width:100%;" src="' + data.url_overridden_by_dest + '" alt="Reddit Post" />' : ''}
 			${data.post_hint === "hosted:video" ? '<video style="width:100%;" controls src="' + data.media.reddit_video.fallback_url + '" alt="Reddit Post" />' : ''}
-			${data.post_hint === "rich:video" ? data.media.oembed.html.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&") : ''}
+			${data.post_hint === "rich:video" ? unescapehtml(data.media.oembed.html) : ''}
 			<div>${Marked.parse(data.selftext).content}</div>
 		</article>\n`;
 
@@ -31,8 +33,17 @@ const subreddit = async (name, by = "hot") => {
 };
 
 const single_post = async (name, by = "top") => {
-	const p = (await g.getSubmission(`t3_${name}`));
-	return post(p);
+	// const p = (await g.getSubmission(`t3_${name}`));
+	const p = (await g.getSubmissionComments(name));
+	let comments = "";
+	for (let i = 0; i < p.comments.length; i++) {
+		const comment = p.comments[i];
+		//console.log(comment.data);
+		if (comment.kind !== "more")
+			comments += `<div><b>${comment.data.author}:</b> ${unescapehtml(comment.data.body_html)}</div>\n`
+	}
+	//console.log(comments);
+	return post(p.submission.data) + comments;
 }
 
 const handler = async (request) => {
