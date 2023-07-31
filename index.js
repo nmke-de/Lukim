@@ -18,25 +18,65 @@ const post = (data) => `\t\t<article style='background-color: #f0f0f0;'>
 			<div>${Marked.parse(data.selftext).content}</div>
 		</article>\n`;
 
-const handler = async (request) => {
-	const query = request.url.slice(("http://" + request.headers.get("host") + "/").length);
-	let subreddit = "";
-	if (query.slice(0, 2) == "r/")
-		subreddit = query.slice(2);
-	const p = (await g.getSubmissions("hot", subreddit)).posts;
-	//console.log(p);
+const subreddit = async (name, by = "hot") => {
 	let res = "";
+	const p = (await g.getSubmissions(by, name)).posts;
 	for (let i = 0; i < p.length; i++) {
 		const entry = p[i];
 		// console.log(`${entry.data.post_hint}\t${entry.data.title}`)
 		// console.log(entry.data.post_hint === undefined ? entry.data : "");
 		res += post(entry.data);
 	}
+	return res;
+};
+
+const single_post = async (name, by = "top") => {
+	const p = (await g.getSubmission(`t3_${name}`));
+	return post(p);
+}
+
+const handler = async (request) => {
+	const query = request.url.slice(("http://" + request.headers.get("host") + "/").length);
+	let name = "";
+	let res = "";
+	const query_parts = query.split("/");
+	let mode = "initial";
+	for(let i = 0; i < query_parts.length; i++) {
+		const part = query_parts[i];
+		switch (i) {
+			case 0:
+				if (part === "r" || part === "")
+					mode = "subreddit";
+				break;
+			case 1:
+				name = part;
+				break;
+			case 2:
+				if (part === "comments")
+					mode = "post";
+				break;
+			case 3:
+				name = part;
+				break;
+			default:
+				continue;
+		}
+	}
+	switch (mode) {
+		case "subreddit":
+			res = await subreddit(name);
+			break;
+		case "post":
+			res = await single_post(name);
+			break;
+		default:
+			res = "Not found. / Not implemented.";
+	}
 	let body = `<!doctype html>
 <html>
 	<head>
 		<meta charset=utf8 />
-		<title>Title</title>
+		<title>Lukim</title>
 	</head>
 	<body>\n${res}\t</body>
 </html>`;
