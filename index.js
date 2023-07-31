@@ -21,7 +21,7 @@ const handler = async (request) => {
 		res += `\t\t<article style='background-color: #f0f0f0;'>
 			<h1>${entry.data.title}</h1>
 			<author>${entry.data.author}</author>
-			<a href="${entry.data.subreddit_name_prefixed}">${entry.data.subreddit_name_prefixed}</a>
+			<a href="/${entry.data.subreddit_name_prefixed}">${entry.data.subreddit_name_prefixed}</a>
 			<a href="${entry.data.permalink}">Permalink</a>
 			${entry.data.post_hint === "image" ? '<img style="width:100%;" src="' + entry.data.url_overridden_by_dest + '" alt="Reddit Post" />' : ''}
 			${entry.data.post_hint === "hosted:video" ? '<video style="width:100%;" controls src="' + entry.data.media.reddit_video.fallback_url + '" alt="Reddit Post" />' : ''}
