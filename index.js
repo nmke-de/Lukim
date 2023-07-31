@@ -1,3 +1,5 @@
+#!/usr/bin/env -S deno run --allow-net
+
 import { Geddit } from "https://github.com/kaangiray26/geddit-app/raw/main/src/js/geddit.js";
 import { Server } from "https://deno.land/std@0.196.0/http/server.ts";
 
