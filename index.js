@@ -30,14 +30,29 @@ const subreddit = async (name, by = "hot") => {
 	return res;
 };
 
+const gen_comments = (comments, depth = 0) => {
+	let res = "";
+	// if (depth > 0)
+	// 	console.log(comments);
+	for (const i in comments) {
+		const comment = comments[i];
+		// console.log(comment);
+		if (comment.kind !== "more") {
+			const children = (comment.data.replies ? gen_comments(comment.data.replies.data.children, depth + 1) : '');
+			// console.log(children);
+			res += `<div class=comment><b>${comment.data.author}:</b> ${unescapehtml(comment.data.body_html)}\n<div>${children}</div>`;
+		} else {
+			// console.log(comment.data.children)
+			res += "more...";
+		}
+		res += "</div>\n";
+	}
+	return res;
+};
+
 const single_post = async (name, by = "top") => {
 	const p = (await g.getSubmissionComments(name));
-	let comments = "";
-	for (let i = 0; i < p.comments.length; i++) {
-		const comment = p.comments[i];
-		if (comment.kind !== "more")
-			comments += `<div><b>${comment.data.author}:</b> ${unescapehtml(comment.data.body_html)}</div>\n`
-	}
+	const comments = gen_comments(p.comments);
 	return post(p.submission.data) + comments;
 }
 
@@ -83,6 +98,13 @@ const handler = async (request) => {
 	<head>
 		<meta charset=utf8 />
 		<title>Lukim</title>
+		<style>
+			.comment {
+				margin: 5px;
+				border-left: 5px solid black;
+				padding-left: 5px;
+			}
+		</style
 	</head>
 	<body>\n${res}\t</body>
 </html>`;
