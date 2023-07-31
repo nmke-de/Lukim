@@ -25,24 +25,19 @@ const subreddit = async (name, by = "hot") => {
 	const p = (await g.getSubmissions(by, name)).posts;
 	for (let i = 0; i < p.length; i++) {
 		const entry = p[i];
-		// console.log(`${entry.data.post_hint}\t${entry.data.title}`)
-		// console.log(entry.data.post_hint === undefined ? entry.data : "");
 		res += post(entry.data);
 	}
 	return res;
 };
 
 const single_post = async (name, by = "top") => {
-	// const p = (await g.getSubmission(`t3_${name}`));
 	const p = (await g.getSubmissionComments(name));
 	let comments = "";
 	for (let i = 0; i < p.comments.length; i++) {
 		const comment = p.comments[i];
-		//console.log(comment.data);
 		if (comment.kind !== "more")
 			comments += `<div><b>${comment.data.author}:</b> ${unescapehtml(comment.data.body_html)}</div>\n`
 	}
-	//console.log(comments);
 	return post(p.submission.data) + comments;
 }
 
@@ -96,5 +91,3 @@ const handler = async (request) => {
 
 const server = new Server({port, handler});
 server.listenAndServe();
-
-// console.log((await g.getSubmissions("top", "politicalcompassmemes")).posts[0]);
