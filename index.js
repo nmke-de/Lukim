@@ -23,8 +23,8 @@ const handler = async (request) => {
 			<author>${entry.data.author}</author>
 			<a href="${entry.data.subreddit_name_prefixed}">${entry.data.subreddit_name_prefixed}</a>
 			<a href="${entry.data.permalink}">Permalink</a>
-			${entry.data.post_hint === "image" ? '<img src="' + entry.data.url_overridden_by_dest + '" alt="Reddit Post" />' : ''}
-			${entry.data.post_hint === "hosted:video" ? '<video controls src="' + entry.data.media.reddit_video.fallback_url + '" alt="Reddit Post" />' : ''}
+			${entry.data.post_hint === "image" ? '<img style="width:100%;" src="' + entry.data.url_overridden_by_dest + '" alt="Reddit Post" />' : ''}
+			${entry.data.post_hint === "hosted:video" ? '<video style="width:100%;" controls src="' + entry.data.media.reddit_video.fallback_url + '" alt="Reddit Post" />' : ''}
 			${entry.data.post_hint === "rich:video" ? entry.data.media.oembed.html.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&") : ''}
 			<div>${Marked.parse(entry.data.selftext).content}</div>
 		</article>\n`;
