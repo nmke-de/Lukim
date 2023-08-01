@@ -9,6 +9,8 @@ const port = 11100;
 
 const unescapehtml = (escaped) => escaped.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
 
+const remove_style = (styled) => styled.replace(/style=.*?[ "']/g, "");
+
 const post = (data, comments = "") => `\t\t<article>
 			<h1>${data.title}</h1>
 			<div class=post-description>
@@ -18,7 +20,7 @@ const post = (data, comments = "") => `\t\t<article>
 			</div>
 			${data.post_hint === "image" ? '<img src="' + data.url_overridden_by_dest + '" alt="Reddit Post" />' : ''}
 			${data.post_hint === "hosted:video" ? '<video controls src="' + data.media.reddit_video.fallback_url + '" alt="Reddit Post" />' : ''}
-			${data.post_hint === "rich:video" ? unescapehtml(data.media.oembed.html) : ''}
+			${data.post_hint === "rich:video" ? remove_style(unescapehtml(data.media.oembed.html)) : ''}
 			<div class=md>${Marked.parse(data.selftext).content}</div>
 			<div class=comments>${comments}</div>
 		</article>\n`;
@@ -56,6 +58,7 @@ const gen_comments = (comments, depth = 0) => {
 const single_post = async (name, by = "top") => {
 	const p = (await g.getSubmissionComments(name));
 	const comments = gen_comments(p.comments);
+	console.log(remove_style(unescapehtml(p.submission.data.media.oembed.html)));
 	return post(p.submission.data, comments);
 }
 
