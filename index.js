@@ -58,7 +58,6 @@ const gen_comments = (comments, depth = 0) => {
 const single_post = async (name, by = "top") => {
 	const p = (await g.getSubmissionComments(name));
 	const comments = gen_comments(p.comments);
-	console.log(remove_style(unescapehtml(p.submission.data.media.oembed.html)));
 	return post(p.submission.data, comments);
 }
 
