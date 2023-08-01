@@ -9,15 +9,18 @@ const port = 11100;
 
 const unescapehtml = (escaped) => escaped.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
 
-const post = (data) => `\t\t<article style='background-color: #f0f0f0;'>
+const post = (data, comments = "") => `\t\t<article>
 			<h1>${data.title}</h1>
-			<author>${data.author}</author>
-			<a href="/${data.subreddit_name_prefixed}">${data.subreddit_name_prefixed}</a>
-			<a href="${data.permalink}">Permalink</a>
-			${data.post_hint === "image" ? '<img style="width:100%;" src="' + data.url_overridden_by_dest + '" alt="Reddit Post" />' : ''}
-			${data.post_hint === "hosted:video" ? '<video style="width:100%;" controls src="' + data.media.reddit_video.fallback_url + '" alt="Reddit Post" />' : ''}
+			<div class=post-description>
+				<author>${data.author}</author>
+				<a href="/${data.subreddit_name_prefixed}">${data.subreddit_name_prefixed}</a>
+				<a href="${data.permalink}">Permalink</a>
+			</div>
+			${data.post_hint === "image" ? '<img src="' + data.url_overridden_by_dest + '" alt="Reddit Post" />' : ''}
+			${data.post_hint === "hosted:video" ? '<video controls src="' + data.media.reddit_video.fallback_url + '" alt="Reddit Post" />' : ''}
 			${data.post_hint === "rich:video" ? unescapehtml(data.media.oembed.html) : ''}
-			<div>${Marked.parse(data.selftext).content}</div>
+			<div class=md>${Marked.parse(data.selftext).content}</div>
+			<div class=comments>${comments}</div>
 		</article>\n`;
 
 const subreddit = async (name, by = "hot") => {
@@ -53,7 +56,7 @@ const gen_comments = (comments, depth = 0) => {
 const single_post = async (name, by = "top") => {
 	const p = (await g.getSubmissionComments(name));
 	const comments = gen_comments(p.comments);
-	return post(p.submission.data) + comments;
+	return post(p.submission.data, comments);
 }
 
 const handler = async (request) => {
@@ -99,6 +102,41 @@ const handler = async (request) => {
 		<meta charset=utf8 />
 		<title>Lukim</title>
 		<style>
+			body {
+				background-color: #08082a;
+				color: #f8f8d6;
+				font-family: sans-serif;
+			}
+			a, a:visited {
+				color: #c7c7ff;
+			}
+			div.fixbar {
+				margin: 0;
+				border: 0;
+				padding: 5px;
+				float: left;
+				background-position: fixed;
+				position: fixed;
+			}
+			article {
+				margin: 5px 25%;
+				padding: 1px;
+				background-color: #484848;
+				background-position: absolute;
+				position: static;
+			}
+			article h1, article .post-description {
+				margin: 2px 5px;
+				text-align: center;
+			}
+			video, img, iframe {
+				margin: 1%;
+				max-width: 98%;
+			}
+			article div.md {
+				margin: 1%;
+				text-align: justify;
+			}
 			.comment {
 				margin: 5px;
 				border-left: 5px solid black;
@@ -106,7 +144,9 @@ const handler = async (request) => {
 			}
 		</style
 	</head>
-	<body>\n${res}\t</body>
+	<body>
+		<div class=fixbar><a href=/><h1>Lukim</h1></a></div>\n${res}
+	</body>
 </html>`;
 	return new Response(body, {status: 200, headers: {"Content-Type": "text/html"}});
 }
