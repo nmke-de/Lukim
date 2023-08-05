@@ -147,7 +147,10 @@ const handler = async (request) => {
 		</style
 	</head>
 	<body>
-		<div class=fixbar><a href=/><h1>Lukim</h1></a></div>\n${res}
+		<div class=fixbar>
+			<a href=/><h1>Lukim</h1></a>
+			<a href="https://reddit.com/${query}" target=blank>View on Reddit</a>
+		</div>\n${res}
 	</body>
 </html>`;
 	return new Response(body, {status: 200, headers: {"Content-Type": "text/html"}});
