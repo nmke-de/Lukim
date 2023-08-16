@@ -19,7 +19,7 @@ const post = (data, comments = "") => `\t\t<article>
 				<a href="${data.permalink}">Permalink</a>
 			</div>
 			${data.post_hint === "image" ? '<img src="' + data.url_overridden_by_dest + '" alt="Reddit Post" />' : ''}
-			${data.post_hint === "hosted:video" ? '<video controls src="' + data.media.reddit_video.fallback_url + '" alt="Reddit Post" />' : ''}
+			${data.post_hint === "hosted:video" ? '<video controls src="' + data.media.reddit_video.fallback_url + '" alt="Reddit Post"></video>' : ''}
 			${data.post_hint === "rich:video" ? remove_style(unescapehtml(data.media.oembed.html)) : ''}
 			<div class=md>${Marked.parse(data.selftext).content}</div>
 			<div class=comments>${comments}</div>
