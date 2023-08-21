@@ -7,7 +7,7 @@ import { Marked } from "https://raw.githubusercontent.com/ubersl0th/markdown/mas
 const g = new Geddit();
 const port = 11100;
 
-const unescapehtml = (escaped) => escaped.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+const unescapehtml = (escaped) => escaped ? escaped.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&") : "";
 
 const remove_style = (styled) => styled.replace(/style=.*?[ "']/g, "");
 
@@ -28,11 +28,12 @@ const post = (data, comments = "") => `\t\t<article>
 const subreddit = async (name, by = "hot") => {
 	let res = "";
 	const p = (await g.getSubmissions(by, name)).posts;
+	const meta = unescapehtml((await g.getSubreddit(name)).description_html);
 	for (let i = 0; i < p.length; i++) {
 		const entry = p[i];
 		res += post(entry.data);
 	}
-	return res;
+	return {res, meta};
 };
 
 const gen_comments = (comments, depth = 0) => {
@@ -65,6 +66,7 @@ const handler = async (request) => {
 	const query = request.url.slice(("http://" + request.headers.get("host") + "/").length);
 	let name = "";
 	let res = "";
+	let meta = "";
 	const query_parts = query.split("/");
 	let mode = "initial";
 	for(let i = 0; i < query_parts.length; i++) {
@@ -90,7 +92,9 @@ const handler = async (request) => {
 	}
 	switch (mode) {
 		case "subreddit":
-			res = await subreddit(name);
+			const tmp = await subreddit(name);
+			res = tmp.res;
+			meta = tmp.meta;
 			break;
 		case "post":
 			res = await single_post(name);
@@ -119,6 +123,9 @@ const handler = async (request) => {
 				float: left;
 				background-position: fixed;
 				position: fixed;
+				max-height: 90%;
+				max-width: 20%;
+				overflow: auto;
 			}
 			article {
 				margin: 5px 25%;
@@ -150,6 +157,8 @@ const handler = async (request) => {
 		<div class=fixbar>
 			<a href=/><h1>Lukim</h1></a>
 			<a href="https://reddit.com/${query}" target=blank>View on Reddit</a>
+			<hr />
+			${meta}
 		</div>\n${res}
 	</body>
 </html>`;
