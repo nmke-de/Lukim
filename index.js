@@ -11,6 +11,14 @@ const unescapehtml = (escaped) => escaped ? escaped.replace(/&lt;/g, "<").replac
 
 const remove_style = (styled) => styled.replace(/style=.*?[ "']/g, "");
 
+const gallery = (data) => {
+	let paste = "";
+	data.gallery_data.items.map(item => item.media_id).map(media_id => data.media_metadata[media_id].s).map(item => item.u ? item.u : item.gif).forEach(url => paste += `<img src="${url}" alt="${url}" />\n\t\t\t\t`);
+	return `<div class=gallery>
+				${paste}
+			</div>`;
+};
+
 const post = (data, comments = "") => `\t\t<article>
 			<h1>${data.title}</h1>
 			<div class=post-description>
@@ -22,7 +30,8 @@ const post = (data, comments = "") => `\t\t<article>
 			${data.post_hint === "hosted:video" ? '<video controls src="' + data.media.reddit_video.fallback_url + '" alt="Reddit Post"></video>' : ''}
 			${data.post_hint === "rich:video" ? remove_style(unescapehtml(data.media.oembed.html)) : ''}
 			${data.post_hint === "link" ? '<a href="' + data.url_overridden_by_dest +'">' + data.url_overridden_by_dest + '</a>' : ''}
-			<div class=md>${Marked.parse(data.selftext).content}</div>
+			${data.is_gallery ? gallery(data) : ''}
+			<div class=md>${unescapehtml(data.selftext_html)}</div>
 			<div class=comments>${comments}</div>
 		</article>\n`;
 
@@ -65,6 +74,7 @@ const gen_comments = (comments, depth = 0) => {
 const single_post = async (name, by = "top") => {
 	const p = (await g.getSubmissionComments(name));
 	const comments = gen_comments(p.comments);
+	console.log(p.submission.data);
 	return post(p.submission.data, comments);
 }
 
