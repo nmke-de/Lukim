@@ -21,6 +21,7 @@ const post = (data, comments = "") => `\t\t<article>
 			${data.post_hint === "image" ? '<img src="' + data.url_overridden_by_dest + '" alt="Reddit Post" />' : ''}
 			${data.post_hint === "hosted:video" ? '<video controls src="' + data.media.reddit_video.fallback_url + '" alt="Reddit Post"></video>' : ''}
 			${data.post_hint === "rich:video" ? remove_style(unescapehtml(data.media.oembed.html)) : ''}
+			${data.post_hint === "link" ? '<a href="' + data.url_overridden_by_dest +'">' + data.url_overridden_by_dest + '</a>' : ''}
 			<div class=md>${Marked.parse(data.selftext).content}</div>
 			<div class=comments>${comments}</div>
 		</article>\n`;
@@ -28,7 +29,12 @@ const post = (data, comments = "") => `\t\t<article>
 const subreddit = async (name, by = "hot") => {
 	let res = "";
 	const p = (await g.getSubmissions(by, name)).posts;
-	const meta = unescapehtml((await g.getSubreddit(name)).description_html);
+	let meta;
+	try {
+		meta = unescapehtml((await g.getSubreddit(name)).description_html);
+	} catch (exception) {
+		meta = "";
+	}
 	for (let i = 0; i < p.length; i++) {
 		const entry = p[i];
 		res += post(entry.data);
