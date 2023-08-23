@@ -9,11 +9,13 @@ const port = 11100;
 
 const unescapehtml = (escaped) => escaped ? escaped.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&") : "";
 
+const unpreview = (url) => url ? url.split("?")[0].replace("preview", "i") : "";
+
 const remove_style = (styled) => styled.replace(/style=.*?[ "']/g, "");
 
 const gallery = (data) => {
 	let paste = "";
-	data.gallery_data.items.map(item => item.media_id).map(media_id => data.media_metadata[media_id].s).map(item => item.u ? item.u : item.gif).forEach(url => paste += `<img src="${url}" alt="${url}" />\n\t\t\t\t`);
+	data.gallery_data.items.map(item => item.media_id).map(media_id => data.media_metadata[media_id].s).map(item => item.u ? unpreview(item.u) : item.gif).forEach(url => paste += `<img src="${url}" alt="${url}" />\n\t\t\t\t`);
 	return `<div class=gallery>
 				${paste}
 			</div>`;
@@ -26,8 +28,8 @@ const post = (data, comments = "") => `\t\t<article>
 				<a href="/${data.subreddit_name_prefixed}">${data.subreddit_name_prefixed}</a>
 				<a href="${data.permalink}">Permalink</a>
 			</div>
-			${data.post_hint === "image" ? '<img src="' + data.url_overridden_by_dest + '" alt="Reddit Post" />' : ''}
-			${data.post_hint === "hosted:video" ? '<video controls src="' + data.media.reddit_video.fallback_url + '" alt="Reddit Post"></video>' : ''}
+			${data.post_hint === "image" ? '<img src="' + unpreview(data.url_overridden_by_dest) + '" alt="Reddit Post" />' : ''}
+			${data.post_hint === "hosted:video" ? '<video id="hosted-video-' + data.name + '" controls src="' + data.media.reddit_video.hls_url + '" alt="Reddit Post"></video><script>addhls(document.getElementById("hosted-video-' + data.name + '"));</script>' : ''}
 			${data.post_hint === "rich:video" ? remove_style(unescapehtml(data.media.oembed.html)) : ''}
 			${data.post_hint === "link" ? '<a href="' + data.url_overridden_by_dest +'">' + data.url_overridden_by_dest + '</a>' : ''}
 			${data.is_gallery ? gallery(data) : ''}
@@ -167,7 +169,15 @@ const handler = async (request) => {
 				border-left: 5px solid black;
 				padding-left: 5px;
 			}
-		</style
+		</style>
+		<script src="https://cdn.tutorialjinni.com/hls.js/1.2.1/hls.min.js"></script>
+		<script>
+			const addhls = (elem) => {
+				let hls = new Hls();
+				hls.loadSource(elem.src);
+				hls.attachMedia(elem);
+			};
+		</script>
 	</head>
 	<body>
 		<div class=fixbar>
