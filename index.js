@@ -24,7 +24,7 @@ const gallery = (data) => {
 const post = (data, comments = "") => `\t\t<article>
 			<h1>${data.title}</h1>
 			<div class=post-description>
-				<author>${data.author}</author>
+				<a href="/u/${data.author}">${data.author}</a>
 				<a href="/${data.subreddit_name_prefixed}">${data.subreddit_name_prefixed}</a>
 				<a href="${data.permalink}">Permalink</a>
 			</div>
@@ -43,6 +43,22 @@ const subreddit = async (name, by = "hot") => {
 	let meta;
 	try {
 		meta = unescapehtml((await g.getSubreddit(name)).description_html);
+	} catch (exception) {
+		meta = "";
+	}
+	for (let i = 0; i < p.length; i++) {
+		const entry = p[i];
+		res += post(entry.data);
+	}
+	return {res, meta};
+};
+
+const user = async (name, by = "hot") => {
+	let res = "";
+	const p = (await g.getUserSubmissions(name, by)).items;
+	let meta;
+	try {
+		meta = unescapehtml((await g.getUser(name)).subreddit.public_description);
 	} catch (exception) {
 		meta = "";
 	}
@@ -93,6 +109,8 @@ const handler = async (request) => {
 			case 0:
 				if (part === "r" || part === "")
 					mode = "subreddit";
+				else if (part === "u" || part === "user")
+					mode = "user";
 				break;
 			case 1:
 				name = part;
@@ -108,9 +126,15 @@ const handler = async (request) => {
 				continue;
 		}
 	}
+	let tmp = {};
 	switch (mode) {
 		case "subreddit":
-			const tmp = await subreddit(name);
+			tmp = await subreddit(name);
+			res = tmp.res;
+			meta = tmp.meta;
+			break;
+		case "user":
+			tmp = await user(name);
 			res = tmp.res;
 			meta = tmp.meta;
 			break;
