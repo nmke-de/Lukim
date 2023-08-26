@@ -15,7 +15,11 @@ const remove_style = (styled) => styled.replace(/style=.*?[ "']/g, "");
 
 const gallery = (data) => {
 	let paste = "";
-	data.gallery_data.items.map(item => item.media_id).map(media_id => data.media_metadata[media_id].s).map(item => item.u ? unpreview(item.u) : item.gif).forEach(url => paste += `<img src="${url}" alt="${url}" />\n\t\t\t\t`);
+	try {
+		data.gallery_data.items.map(item => item.media_id).map(media_id => data.media_metadata[media_id].s).map(item => item.u ? unpreview(item.u) : item.gif).forEach(url => paste += `<img src="${url}" alt="${url}" />\n\t\t\t\t`);
+	} catch (_) {
+		console.log("Empty gallery?!");
+	}
 	return `<div class=gallery>
 				${paste}
 			</div>`;
@@ -192,6 +196,13 @@ const handler = async (request) => {
 				margin: 5px;
 				border-left: 5px solid black;
 				padding-left: 5px;
+			}
+			.md-spoiler-text {
+				color: #000000;
+				background-color: #000000;
+			}
+			.md-spoiler-text:hover {
+				color: #ffffff;
 			}
 		</style>
 		<script src="https://cdn.tutorialjinni.com/hls.js/1.2.1/hls.min.js"></script>
