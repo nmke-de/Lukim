@@ -14,4 +14,6 @@ Work in progress.
 
 ## Usage
 
-`cd` to this directory, then type `./index.js`.
+`cd` to this directory, then type `./index.js`. After that, open <http://localhost:11100> in your web browser (replace localhost with a domain name if appropriate).
+
+To quit, simply abort with `^C`.
