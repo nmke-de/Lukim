@@ -73,6 +73,16 @@ const user = async (name, by = "hot") => {
 	return {res, meta};
 };
 
+const search = async (query, by = "hot") => {
+	let res = "";
+	const p = (await g.searchSubmissions(query)).items;
+	for (let i = 0; i < p.length; i++) {
+		const entry = p[i];
+		res += post(entry.data);
+	}
+	return {res, meta: ""};
+};
+
 const gen_comments = (comments, depth = 0) => {
 	let res = "";
 	// if (depth > 0)
@@ -115,6 +125,11 @@ const handler = async (request) => {
 					mode = "subreddit";
 				else if (part === "u" || part === "user")
 					mode = "user";
+				else if (part.split("?q=")[0] === "search") {
+					mode = "search";
+					// TODO might need more elegant solution
+					name = part.split("?q=")[1];
+				}
 				break;
 			case 1:
 				name = part;
@@ -144,6 +159,11 @@ const handler = async (request) => {
 			break;
 		case "post":
 			res = await single_post(name);
+			break;
+		case "search":
+			tmp = await search(name);
+			res = tmp.res;
+			meta = tmp.meta;
 			break;
 		default:
 			res = "Not found. / Not implemented.";
@@ -218,6 +238,10 @@ const handler = async (request) => {
 		<div class=fixbar>
 			<a href=/><h1>Lukim</h1></a>
 			<a href="https://reddit.com/${query}" target=blank>View on Reddit</a>
+			<form action="/search" method=get>
+				<input name=q placeholder=Search></input>
+				<button>Submit</button>
+			</form>
 			<hr />
 			${meta}
 		</div>\n${res}
